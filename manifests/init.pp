@@ -67,7 +67,7 @@
 #   $manage_db_tables
 #     Whether to create the DB tables during install
 #   $manage_db
-#     Whether to manage the existance of the database.  If true, the $db_user must have privileges 
+#     Whether to manage the existance of the database.  If true, the $db_user must have privileges
 #     to create databases on $db_host
 #   $clients
 #     For directors, $clients is a hash of clients.  The keys are the clients while the value is a hash of parameters
@@ -109,6 +109,7 @@ class bacula(
     $db_port                     = $bacula::config::db_port,
     $manage_db                   = $bacula::config::safe_manage_db,
     $manage_db_tables            = $bacula::config::safe_manage_db_tables,
+    $bsmtp                       = $bacula::config::bsmtp,
     $mail_to                     = $bacula::config::mail_to,
     $is_director                 = $bacula::config::safe_is_director,
     $is_client                   = $bacula::config::safe_is_client,
@@ -136,7 +137,7 @@ class bacula(
     $console_password            = $bacula::config::console_password,
     $clients                     = {}
   ) inherits bacula::config {
-    
+
 
 
   #Validate our parameters
@@ -164,6 +165,7 @@ class bacula(
   }
 
   class { 'bacula::common':
+    manage_db        => $manage_db,
     manage_db_tables => $manage_db_tables,
     db_backend       => $db_backend,
     db_user          => $db_user,
@@ -171,10 +173,9 @@ class bacula(
     db_host          => $db_host,
     db_database      => $db_database,
     db_port          => $db_port,
-    packages         => $packages,
   }
 
-  
+
   if $is_director {
     class { 'bacula::director':
       db_backend         => $db_backend,
@@ -184,7 +185,9 @@ class bacula(
       postgresql_package => $director_postgresql_package,
       mysql_package      => $director_mysql_package,
       sqlite_package     => $director_sqlite_package,
+      manage_db_tables   => $manage_db_tables,
       director_package   => $director_package,
+      bsmtp              => $bsmtp,
       mail_to            => $mail_to,
       template           => $director_template,
       use_console        => $use_console,
@@ -194,7 +197,6 @@ class bacula(
       db_host            => $db_host,
       db_port            => $db_port,
       db_database        => $db_database,
-      require            => Class['bacula::common'],
       clients            => $clients,
     }
   }
@@ -208,19 +210,18 @@ class bacula(
       postgresql_package => $storage_postgresql_package,
       mysql_package      => $storage_mysql_package,
       sqlite_package     => $storage_sqlite_package,
+      manage_db_tables   => $manage_db_tables,
       storage_package    => $storage_package,
       console_password   => $console_password,
       template           => $storage_template,
-      require            => Class['bacula::common'],
     }
   }
 
   if $is_client {
-    class { 'bacula::client': 
+    class { 'bacula::client':
       director_server   => $director_server,
       director_password => $director_password,
       client_package    => $client_package,
-      require           => Class['bacula::common'],
     }
   }
 
@@ -229,13 +230,11 @@ class bacula(
       director_server   => $director_server,
       director_password => $director_password,
       console_package   => $console_package,
-      require           => Class['bacula::common'],
     }
   }
 
   if $manage_bat {
-    class { 'bacula::bat': 
-      require => Class['bacula::common'],
+    class { 'bacula::bat':
     }
   }
 }

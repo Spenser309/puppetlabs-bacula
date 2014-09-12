@@ -29,8 +29,8 @@ Catalog {
 # should should be for just about everything.
 Messages {
   Name = "<%= director_name -%>:messages:standard"
-  Mail Command = "/usr/lib/bacula/bsmtp -h localhost -f bacula@<%= domain -%> -s \"Bacula %t %e (for %c)\" %r"
-  Operator Command = "/usr/lib/bacula/bsmtp -h localhost -f bacula@<%= domain -%> -s \"Bacula Intervention Required (for %c)\" %r"
+  Mail Command = "<%= bsmtp -%> -h localhost -f bacula@<%= domain -%> -s \"Bacula %t %e (for %c)\" %r"
+  Operator Command = "<%= bsmtp -%> -h localhost -f bacula@<%= domain -%> -s \"Bacula Intervention Required (for %c)\" %r"
   Mail = <%= mail_to -%> = all, !skipped
   Operator = <%= mail_to -%> = mount
   Console = all, !skipped, !saved
@@ -44,7 +44,7 @@ Messages {
 # These are messages directly from the various daemons themselves.
 Messages {
   Name = "<%= director_name -%>:messages:daemon"
-  Mail Command = "/usr/lib/bacula/bsmtp -h localhost -f bacula@<%= domain -%> -s \"Bacula Notice (from Director %d)\" %r"
+  Mail Command = "<%= bsmtp -%> -h localhost -f bacula@<%= domain -%> -s \"Bacula Notice (from Director %d)\" %r"
   Mail = <%= mail_to -%> = all, !skipped
   Console = all, !skipped, !saved
   Append = "/var/log/bacula/<%= director_name -%>:director.log" = all, !skipped

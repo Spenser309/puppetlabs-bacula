@@ -1,6 +1,6 @@
 # Class: bacula::common
-# 
-# This class enforces common resources needed by all 
+#
+# This class enforces common resources needed by all
 # bacula components
 #
 # Actions:
@@ -10,31 +10,21 @@
 # Sample Usage:
 #
 # class { 'bacula::common': }
-class bacula::common(
-    $packages = '',
-    $manage_db_tables,
-    $db_backend,
-    $db_user,
-    $db_database,
-    $db_password,
-    $db_port,
-    $db_host
-  ) {
-
-  if $packages {
-    package { $packages: 
-      ensure => installed,
-      notify => $manage_db_tables ? {
-        true  => Exec['make_db_tables'],
-        false => undef,
-      }
-    }
-  }
+class bacula::common (
+  $manage_db,
+  $manage_db_tables,
+  $db_backend,
+  $db_user,
+  $db_database,
+  $db_password,
+  $db_port,
+  $db_host
+) {
 
   $db_parameters = $db_backend ? {
     'sqlite'     => '',
     'mysql'      => "--host=${db_host} --user=${db_user} --password=${db_password} --port=${db_port} --database=${db_database}",
-    'postgresql' => "--host=${db_host} --user=${db_user} --password=${db_password} --port=${db_port} --database=${db_database}",
+    'postgresql' => "--host=${db_host} --user=${db_user} --port=${db_port} --dbname=${db_database}",
   }
 
   if $manage_db_tables {
@@ -43,6 +33,7 @@ class bacula::common(
         'Redhat' => "/usr/libexec/bacula/make_bacula_tables ${db_parameters}",
         default  => "/usr/lib/bacula/make_bacula_tables ${db_parameters}",
       },
+      environment => "PGPASSWORD=${db_password}",
       refreshonly => true,
     }
   }
@@ -84,7 +75,7 @@ class bacula::common(
 
       'sqlite': {
         sqlite::db { $db_database:
-          location => "/var/lib/bacula/${db_database}.db", 
+          location => "/var/lib/bacula/${db_database}.db",
           owner    => 'bacula',
           group    => 'bacula',
           ensure   => present,

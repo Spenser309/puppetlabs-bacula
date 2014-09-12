@@ -51,21 +51,22 @@ class bacula::director(
     $director_package = '',
     $mysql_package,
     $postgresql_package,
-    $mail_to,
     $sqlite_package,
+    $manage_db_tables,
+    $bsmtp,
+    $mail_to,
     $template = 'bacula/bacula-dir.conf.erb',
     $use_console,
     $console_password,
     $clients = {}
-  ) {
+  ) inherits bacula::common {
 
-  
   $storage_name_array = split($storage_server, '[.]')
   $director_name_array = split($server, '[.]')
   $storage_name = $storage_name_array[0]
   $director_name = $director_name_array[0]
 
-  
+
   # This function takes each client specified in $clients
   # and generates a bacula::client resource for each
   #
@@ -82,7 +83,7 @@ class bacula::director(
     'postgresql' => $postgres_package,
     'sqlite'     => $sqlite_package,
   }
-  
+
   if $director_package {
     package { $director_package:
       ensure => installed,
@@ -95,6 +96,10 @@ class bacula::director(
   if $db_package {
     package { $db_package:
       ensure => installed,
+      before => $manage_db_tables ? {
+			''      => undef,
+			default => Exec['make_db_tables'],
+      }
     }
   }
 
