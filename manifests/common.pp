@@ -93,6 +93,7 @@ class bacula::common (
   user { 'bacula':
     ensure => present,
     gid    => 'bacula',
+    home   => '/var/lib/bacula',
   }
 
   group { 'bacula':

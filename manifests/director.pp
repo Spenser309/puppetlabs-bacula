@@ -97,8 +97,8 @@ class bacula::director(
     package { $db_package:
       ensure => present,
       before => $manage_db_tables ? {
-			''      => undef,
-			default => Exec['make_db_tables'],
+        default => undef,
+        true    => Exec['make_db_tables'],
       }
     }
   }

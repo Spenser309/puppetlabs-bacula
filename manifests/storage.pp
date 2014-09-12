@@ -89,8 +89,8 @@ class bacula::storage(
     package { $db_package:
       ensure => installed,
       before => $manage_db_tables ? {
-         ''      => undef,
-         default => Exec['make_db_tables'],
+        default => undef,
+        true    => Exec['make_db_tables'],
       }
     }
   }
