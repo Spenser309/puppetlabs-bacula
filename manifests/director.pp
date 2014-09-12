@@ -80,7 +80,7 @@ class bacula::director(
   # before this code is reached.
   $db_package = $db_backend ? {
     'mysql'      => $mysql_package,
-    'postgresql' => $postgres_package,
+    'postgresql' => $postgresql_package,
     'sqlite'     => $sqlite_package,
   }
 
@@ -95,12 +95,18 @@ class bacula::director(
 
   if $db_package {
     package { $db_package:
-      ensure => installed,
+      ensure => present,
       before => $manage_db_tables ? {
 			''      => undef,
 			default => Exec['make_db_tables'],
       }
     }
+  }
+
+  file { '/etc/bacula/':
+    ensure  => directory,
+    owner   => 'bacula',
+    group   => 'bacula',
   }
 
   # Create the configuration for the Director and make sure the directory for
@@ -119,10 +125,14 @@ class bacula::director(
   }
 
   file { '/etc/bacula/bacula-dir.d':
-    ensure => directory,
-    owner  => 'bacula',
-    group  => 'bacula',
-    before => Service['bacula-director'],
+    ensure  => directory,
+    owner   => 'bacula',
+    group   => 'bacula',
+    before  => Service['bacula-director'],
+    require => $db_package ? {
+      ''      => undef,
+      default => Package[$db_package],
+    }
   }
 
   file { '/etc/bacula/bacula-dir.d/empty.conf':

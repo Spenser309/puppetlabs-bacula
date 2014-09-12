@@ -35,6 +35,7 @@ class bacula::common (
       },
       environment => "PGPASSWORD=${db_password}",
       refreshonly => true,
+      before      => Service['bacula-director'],
     }
   }
 
